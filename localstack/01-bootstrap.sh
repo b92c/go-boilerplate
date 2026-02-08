@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Este script roda dentro do container do LocalStack quando o serviço está pronto
-# Cria recursos de exemplo para desenvolvimento local
-
 REGION="${AWS_REGION:-us-east-1}"
 ARTIFACT="/opt/serverless/health.zip"
 
 log() { echo "[$(date +'%F %T')] $*"; }
 
 # S3 bucket
-log "Creating S3 bucket: s3://go-api-template-bucket"
-awslocal s3 mb s3://go-api-template-bucket >/dev/null 2>&1 || true
+log "Creating S3 bucket: s3://go-boilerplate-bucket"
+awslocal s3 mb s3://go-boilerplate-bucket >/dev/null 2>&1 || true
 
-# DynamoDB table (para CRUD e healthcheck perceber presença do serviço)
+# DynamoDB
 log "Creating DynamoDB table: example-items"
 awslocal dynamodb create-table \
   --table-name example-items \
@@ -21,7 +18,7 @@ awslocal dynamodb create-table \
   --key-schema AttributeName=id,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
   --region "${REGION}" >/dev/null 2>&1 || true
-
+table (para CRUD e healthcheck perceber presença do serviço)
 # SQS queue
 log "Creating SQS queue: example-queue"
 QUEUE_URL=$(awslocal sqs create-queue --queue-name example-queue --query QueueUrl --output text 2>/dev/null || true)
@@ -30,7 +27,7 @@ QUEUE_URL=$(awslocal sqs create-queue --queue-name example-queue --query QueueUr
 log "Creating SNS topic: example-topic"
 TOPIC_ARN=$(awslocal sns create-topic --name example-topic --query TopicArn --output text 2>/dev/null || true)
 
-# Assinar SQS no SNS (com policy para permitir envio)
+# Subscript SQS on SNS
 if [[ -n "${TOPIC_ARN}" ]]; then
   if [[ -z "${QUEUE_URL:-}" ]]; then
     QUEUE_URL=$(awslocal sqs get-queue-url --queue-name example-queue --query QueueUrl --output text 2>/dev/null || true)
@@ -61,7 +58,7 @@ EOF
   fi
 fi
 
-# Lambda function Go (provided.al2) empacotada no serviço lambda-pack
+# Lambda function
 if [[ -f "${ARTIFACT}" ]]; then
   log "Deploying Go Lambda: health"
   if ! awslocal lambda get-function --function-name health >/dev/null 2>&1; then
@@ -78,8 +75,6 @@ if [[ -f "${ARTIFACT}" ]]; then
       --zip-file fileb://"${ARTIFACT}" >/dev/null 2>&1 || true
   fi
 
-  # Criar API HTTP e integrar com Lambda (opcional, simples)
-  # Nota: A stack Serverless já cobre isso em ambientes de deploy.
 else
   log "Lambda artifact not found at ${ARTIFACT} (lambda-pack may have failed)."
 fi

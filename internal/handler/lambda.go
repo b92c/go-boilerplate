@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"go-api-template/internal/usecase/health"
-	"go-api-template/pkg/logger/zaplogger"
+	"github.com/b92c/go-boilerplate/internal/usecase/health"
+	"github.com/b92c/go-boilerplate/pkg/logger/zaplogger"
 
 	"github.com/aws/aws-lambda-go/events"
 )

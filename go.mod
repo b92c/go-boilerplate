@@ -1,4 +1,4 @@
-module go-api-template
+module github.com/b92c/go-boilerplate
 
 go 1.25.6
 

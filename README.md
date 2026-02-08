@@ -1,46 +1,46 @@
 # Go Boilerplate (Go + AWS Lambda + LocalStack Web + Serverless)
 
-Boilerplate em Go com arquitetura limpa, pronto para:
+A clean architecture Go boilerplate ready for:
 
-- Desenvolvimento local com Docker Engine (docker compose)
-- Simulação de AWS via LocalStack + LocalStack UI
-- Lambda/API Gateway (handler HTTP) e binário local (servidor HTTP)
-- Testes unitários nativos (sem frameworks de mock)
-- Deploy com Serverless Framework (dev/test/prod)
+- Local development with Docker Engine (docker compose)
+- AWS simulation via LocalStack + LocalStack UI
+- Lambda/API Gateway (HTTP handler) and local binary (HTTP server)
+- Native unit tests (without mock frameworks)
+- Deployment with Serverless Framework (dev/test/prod)
 
-## Estrutura de diretórios (baseada na Arquitetura Limpa de Bob Martin, aka 'Uncle Bob')
+## Directory Structure (based on Bob Martin's Clean Architecture, aka 'Uncle Bob')
 
 ```text
 .
 ├── cmd/
-│   ├── main.go                 # Entrypoint HTTP local (binário)
-│   └── lambda/main.go          # Entrypoint Lambda (AWS)
+│   ├── main.go                 # HTTP entrypoint for local development
+│   └── lambda/main.go          # Lambda entrypoint (AWS)
 ├── internal/
 │   ├── adapter/
 │   │   ├── httpserver/
-│   │   │   ├── router.go       # Adaptador HTTP (delivery)
-│   │   │   └── router_test.go  # Testes do adaptador
+│   │   │   ├── router.go       # HTTP adapter (delivery)
+│   │   │   └── router_test.go
 │   │   └── repository/
 │   │       └── dynamo/
-│   │           └── example_repository.go  # Repo CRUD usando a porta DynamoDB
+│   │           └── example_repository.go  # CRUD repository using DynamoDB port
 │   ├── handler/
-│   │   └── lambda.go           # Handler de API Gateway (Lambda) com logs estruturados
+│   │   └── lambda.go           # API Gateway handler (Lambda) with structured logs
 │   ├── port/
-│   │   ├── dynamodb.go         # Port (interface) para DynamoDB
-│   │   └── logger.go           # Port (interface) para Logger
+│   │   ├── dynamodb.go         # Port (interface) for DynamoDB
+│   │   └── logger.go           # Port (interface) for Logger
 │   └── usecase/
 │       ├── health/
-│       │   ├── service.go      # Caso de uso de healthcheck (injeta Logger/DynamoDB)
+│       │   ├── service.go      # Healthcheck use case (injects Logger/DynamoDB)
 │       │   └── service_test.go
 │       └── example/
-│           └── service.go      # Caso de uso exemplo CRUD usando repo dynamo
+│           └── service.go      # Example CRUD use case using DynamoDB repo
 ├── pkg/
 │   ├── dynamodb/
 │   │   └── client.go           # Implementação AWS SDK v2 (DynamoDBPort)
 │   └── logger/
 │       └── zaplogger/
 │           └── zaplogger.go    # Implementação com zap (Logger)
-├── .setup/localstack-web/      # UI Web para LocalStack
+├── .setup/localstack-web/      # Web UI for LocalStack
 ├── Dockerfile
 ├── docker-compose.yml
 ├── Makefile
@@ -51,24 +51,24 @@ Boilerplate em Go com arquitetura limpa, pronto para:
 └── README.md
 ```
 
-Decisão arquitetural
+Architectural Decision
 
-- Camada de domínios (usecase) depende apenas de ports (interfaces) em `internal/port`.
-- Implementações de infraestrutura ficam em `pkg/*` (ex.: AWS SDK v2, zap), isoladas do domínio.
-- Adapters expõem I/O (HTTP) e repositórios implementam orquestração para casos de uso.
-- Composição e DI ocorrem nos entrypoints (`cmd/*`).
+- Domain layer (usecase) depends only on ports (interfaces) in `internal/port`.
+- Infrastructure implementations reside in `pkg/*` (e.g., AWS SDK v2, zap), isolated from the domain.
+- Adapters expose I/O (HTTP) and repositories implement orchestration for use cases.
+- Composition and DI occur at entrypoints (`cmd/*`).
 
-### Ports e pkg (exemplos)
+### Ports and pkg (examples)
 
 - Logger (port): `internal/port/logger.go`
-  - Implementação: `pkg/logger/zaplogger`
+  - Implementation: `pkg/logger/zaplogger`
 - DynamoDB (port): `internal/port/dynamodb.go`
-  - Implementação: `pkg/dynamodb/client.go`
-  - Repositório exemplo: `internal/adapter/repository/dynamo/example_repository.go`
+  - Implementation: `pkg/dynamodb/client.go`
+  - Example repository: `internal/adapter/repository/dynamo/example_repository.go`
 
-### Injeção de dependências
+### Dependency Injection
 
-- Entrypoint local (`cmd/main.go`):
+- Local entrypoint (`cmd/main.go`):
 
 ```go
 zl, _ := zaplogger.FromEnv()
@@ -79,33 +79,33 @@ exampleSvc := example.NewService(repo, zl)
 router := httpserver.NewRouter(healthSvc, exampleSvc)
 ```
 
-- Entrypoint Lambda (`cmd/lambda/main.go` + `internal/handler/lambda.go`):
+- Lambda entrypoint (`cmd/lambda/main.go` + `internal/handler/lambda.go`):
 
 ```go
-lambda.Start(handler.LambdaHandler) // o handler cria o logger e injeta no caso de uso
+lambda.Start(handler.LambdaHandler) // handler creates logger and injects into use case
 ```
 
-## Desenvolvimento local
+## Local Development
 
-1. Subir stack:
+1. Start the stack:
 
 ```bash
 docker compose up -d --build
 ```
 
-1. UI do LocalStack Web:
+1. LocalStack Web UI:
 
 - <http://localhost:8081>
 
-### Exemplos de Interface (LocalStack UI)
+### Interface Examples (LocalStack UI)
 
 - #### Dashboard
 
-   Modo **Light**
-![LocalStack UI - Light](.setup/docs/localstack-ui.png)
+  **Light** mode
+  ![LocalStack UI - Light](.setup/docs/localstack-ui.png)
 
-   Modo **Dark**
-![LocalStack UI - Dark](.setup/docs/localstack-ui-dark.png)
+  **Dark** mode
+  ![LocalStack UI - Dark](.setup/docs/localstack-ui-dark.png)
 
 1. Healthcheck:
 
@@ -113,13 +113,13 @@ docker compose up -d --build
 curl http://localhost:8080/health
 ```
 
-1. CRUD de exemplo (/items)
+1. Example CRUD (/items)
 
-- Crie a tabela no LocalStack (DynamoDB):
-  - Nome: `example-items`
+- Create the table in LocalStack (DynamoDB):
+  - Name: `example-items`
   - Partition key: `id (String)`
 
-- Criar item:
+- Create an item:
 
 ```bash
 curl -s -X POST http://localhost:8080/items \
@@ -127,19 +127,19 @@ curl -s -X POST http://localhost:8080/items \
   -d '{"id":"1","name":"foo"}'
 ```
 
-- Listar itens:
+- List items:
 
 ```bash
 curl -s http://localhost:8080/items
 ```
 
-- Obter item:
+- Get an item:
 
 ```bash
 curl -s http://localhost:8080/items/1
 ```
 
-- Atualizar:
+- Update:
 
 ```bash
 curl -s -X PUT http://localhost:8080/items/1 \
@@ -147,25 +147,25 @@ curl -s -X PUT http://localhost:8080/items/1 \
   -d '{"name":"bar"}'
 ```
 
-- Deletar:
+- Delete:
 
 ```bash
 curl -s -X DELETE http://localhost:8080/items/1 -i
 ```
 
-## Stack de exemplo (bootstrap LocalStack)
+## Example Stack (LocalStack bootstrap)
 
-Ao subir o Docker (docker compose up -d --build), o LocalStack executa o script `localstack/01-bootstrap.sh` automaticamente (init/ready.d) e cria recursos para desenvolvimento:
+When you start Docker (docker compose up -d --build), LocalStack automatically executes the `localstack/01-bootstrap.sh` script (init/ready.d) and creates resources for development:
 
-- S3: bucket `s3://go-api-template-bucket`
-- DynamoDB: tabela `example-items (PK: id String)`
-- Lambda: função `health` (Go, runtime provided.al2)
-- SNS: tópico `example-topic`
-- SQS: fila `example-queue` assinada no tópico SNS
+- S3: bucket `s3://go-boilerplate-bucket`
+- DynamoDB: table `example-items (PK: id String)`
+- Lambda: function `health` (Go, runtime provided.al2)
+- SNS: topic `example-topic`
+- SQS: queue `example-queue` subscribed to the SNS topic
 
-### Exemplos rápidos (awslocal)
+### Quick Examples (awslocal)
 
-- Verificar recursos criados:
+- Check created resources:
 
 ```bash
 awslocal s3 ls
@@ -175,7 +175,7 @@ awslocal sns list-topics
 awslocal sqs list-queues
 ```
 
-- Invocar a Lambda de exemplo:
+- Invoke the example Lambda:
 
 ```bash
 awslocal lambda invoke \
@@ -184,7 +184,7 @@ awslocal lambda invoke \
   /tmp/out.json >/dev/null && cat /tmp/out.json; echo
 ```
 
-- Publicar no SNS e ler da SQS:
+- Publish to SNS and read from SQS:
 
 ```bash
 TOPIC_ARN=$(awslocal sns list-topics --query 'Topics[0].TopicArn' --output text)
@@ -193,14 +193,14 @@ QUEUE_URL=$(awslocal sqs get-queue-url --queue-name example-queue --query QueueU
 awslocal sqs receive-message --queue-url "$QUEUE_URL" --wait-time-seconds 1
 ```
 
-- S3: enviar e listar arquivo:
+- S3: upload and list files:
 
 ```bash
-awslocal s3 cp README.md s3://go-api-template-bucket/README.md
-awslocal s3 ls s3://go-api-template-bucket
+awslocal s3 cp README.md s3://go-boilerplate-bucket/README.md
+awslocal s3 ls s3://go-boilerplate-bucket
 ```
 
-- DynamoDB: inserir e listar itens:
+- DynamoDB: insert and list items:
 
 ```bash
 awslocal dynamodb put-item \
@@ -209,45 +209,49 @@ awslocal dynamodb put-item \
 awslocal dynamodb scan --table-name example-items
 ```
 
-## Testes
+## Tests
 
 ```bash
 go test ./...
 ```
 
-## Build e empacote Lambda (custom runtime provided.al2)
+## Build and Package Lambda (custom runtime provided.al2)
 
 ```bash
 make package-lambda
 ```
 
-Isso gera `.serverless/health.zip` contendo o binário `bootstrap` (exigência do runtime).
+This generates `.serverless/health.zip` containing the `bootstrap` binary (required by the runtime).
 
-## Deploy com Serverless
+## Deploy with Serverless
 
-- Pré-requisitos: Node 18+, npm/npx.
-- Com LocalStack (desenvolvimento):
+- Prerequisites: Node 18+, npm/npx.
+- With LocalStack (development):
 
 ```bash
 REGION=us-east-1 make sls-deploy
 ```
 
-- Remover:
+- Remove:
 
 ```bash
 REGION=us-east-1 make sls-remove
 ```
 
-- Para AWS real, autentique sua AWS CLI/credenciais e rode o mesmo comando, sem LocalStack em execução.
+- For real AWS, authenticate your AWS CLI/credentials and run the same command without LocalStack running.
 
-## Variáveis
+## Environment Variables
 
 - LOCALSTACK_ENDPOINT: container (<http://localstack:4566>), host (<http://localhost:4566>)
 - AWS_REGION: us-east-1 (default)
-- APP_ENV: dev/local/prod (define preset do logger)
-- ENABLE_DYNAMODB: false para desabilitar cliente (default habilitado)
-- EXAMPLE_TABLE: nome da tabela para o CRUD (default: example-items)
+- APP_ENV: dev/local/prod (defines logger preset)
+- ENABLE_DYNAMODB: false to disable client (enabled by default)
+- EXAMPLE_TABLE: table name for CRUD (default: example-items)
 
-## Licença
+## Thanks & Credits
+
+This project uses [LocalStack Web](https://github.com/dantasrafael/localstack-web), a web UI for LocalStack. Special thanks to [dantasrafael](https://github.com/dantasrafael) for creating and maintaining this excellent tool.
+
+## License
 
 MIT

@@ -3,10 +3,9 @@ package dynamo
 import (
 	"context"
 
-	"go-api-template/internal/port"
+	"github.com/b92c/go-boilerplate/internal/port"
 )
 
-// ExampleRepository demonstra um CRUD simples usando a porta DynamoDB.
 type ExampleRepository struct {
 	db    port.DynamoDBPort
 	table string

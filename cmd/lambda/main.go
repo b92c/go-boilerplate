@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-api-template/internal/handler"
+	"github.com/b92c/go-boilerplate/internal/handler"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )

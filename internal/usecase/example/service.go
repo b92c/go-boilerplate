@@ -3,8 +3,8 @@ package example
 import (
 	"context"
 
-	"go-api-template/internal/adapter/repository/dynamo"
-	"go-api-template/internal/port"
+	"github.com/b92c/go-boilerplate/internal/adapter/repository/dynamo"
+	"github.com/b92c/go-boilerplate/internal/port"
 )
 
 // Service expõe operações de domínio usando um repositório que depende da porta de DynamoDB.

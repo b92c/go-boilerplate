@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"go-api-template/internal/usecase/health"
+	"github.com/b92c/go-boilerplate/internal/usecase/health"
 )
 
 type fakeHealthService struct{ resp health.Response }

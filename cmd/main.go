@@ -7,13 +7,13 @@ import (
 	"os"
 	"time"
 
-	"go-api-template/internal/adapter/httpserver"
-	"go-api-template/internal/adapter/repository/dynamo"
-	"go-api-template/internal/port"
-	"go-api-template/internal/usecase/example"
-	"go-api-template/internal/usecase/health"
-	"go-api-template/pkg/dynamodb"
-	"go-api-template/pkg/logger/zaplogger"
+	"github.com/b92c/go-boilerplate/internal/adapter/httpserver"
+	"github.com/b92c/go-boilerplate/internal/adapter/repository/dynamo"
+	"github.com/b92c/go-boilerplate/internal/port"
+	"github.com/b92c/go-boilerplate/internal/usecase/example"
+	"github.com/b92c/go-boilerplate/internal/usecase/health"
+	"github.com/b92c/go-boilerplate/pkg/dynamodb"
+	"github.com/b92c/go-boilerplate/pkg/logger/zaplogger"
 )
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 
 	// DynamoDB client (opcional)
 	var ddbPort port.DynamoDBPort
-	if os.Getenv("ENABLE_DYNAMODB") != "false" { // habilitado por padrão
+	if os.Getenv("ENABLE_DYNAMODB") != "false" {
 		ddbClient, err := dynamodb.New(ctx, dynamodb.Options{Region: region, Endpoint: localstackEndpoint})
 		if err != nil {
 			zl.Warn("failed to init dynamodb client", "error", err)

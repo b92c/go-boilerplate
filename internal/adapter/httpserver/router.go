@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"go-api-template/internal/usecase/health"
+	"github.com/b92c/go-boilerplate/internal/usecase/health"
 )
 
 const (

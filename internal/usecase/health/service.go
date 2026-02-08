@@ -5,22 +5,14 @@ import (
 	"net/http"
 	"time"
 
-	"go-api-template/internal/port"
+	"github.com/b92c/go-boilerplate/internal/port"
 )
-
-// Response representa o retorno do healthcheck
-// Inclui verificações mínimas para ambiente LocalStack
-// e metadados úteis para debugging
 
 type Response struct {
 	OK         bool   `json:"ok"`
 	Message    string `json:"message"`
 	LocalStack string `json:"localstackEndpoint"`
 }
-
-// Service define a interface do caso de uso de health check
-// Usamos struct concreto simples (sem dependências externas)
-// para manter o boilerplate leve
 
 type Service interface {
 	Check(ctx context.Context) Response
@@ -30,8 +22,6 @@ func NewService(localstackEndpoint string) Service {
 	return &service{localstackEndpoint: localstackEndpoint}
 }
 
-// NewServiceWithDeps permite injetar integrações externas via portas (interfaces)
-// mantendo a aplicação desacoplada de detalhes de infraestrutura.
 func NewServiceWithDeps(localstackEndpoint string, ddb port.DynamoDBPort, log port.Logger) Service {
 	return &service{localstackEndpoint: localstackEndpoint, ddb: ddb, log: log}
 }

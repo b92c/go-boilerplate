@@ -1,4 +1,4 @@
-APP_NAME=go-api-template
+APP_NAME=go-boilerplate
 LAMBDA_NAME=health
 BIN_DIR=bin
 PKG=./...

@@ -1,5 +1,5 @@
 {
-  "name": "go-api-template",
+  "name": "go-boilerplate",
   "private": true,
   "devDependencies": {
     "serverless": "^3.38.0",
